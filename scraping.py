@@ -1,25 +1,12 @@
 # import文
-from cgitb import html
-from optparse import Values
 from time import sleep
 import configparser
 
 from bs4 import BeautifulSoup
 import re
 import pandas as pd
-from pyparsing import alphas
 import requests
 import psycopg2 as pg
-
-# SQLログイン情報 
-conf = configparser.ConfigParser()
-conf.read('config.ini')
-
-path = conf['SQL']['path']
-port = conf['SQL']['port']
-dbname = conf['SQL']['dbname']
-user = conf['SQL']['user']
-password = conf['SQL']['password']
 
 ## 作品名先頭文字が「あ」の書籍を出力
 # urlの取得
@@ -41,22 +28,21 @@ alphas = ['a','i','u','e','o',
         'wa','wo','nn','zz'
     ]
 
-# アクセスのための番号とアルファベット
+
 print('start')
+# アクセスのためのページ番号とアルファベット
 for alpha in alphas:
-    for page in range(1,30):
+    for page in range(1,50):
         
-        sleep(5)
+        sleep(3)
 
         target_url = url.format(alpha=alpha, page=page)
     
     # # 適切にURLが取れてるか確認
-    #     print(target_url)
-
     # target_urlへのアクセス結果を、変数rに格納
         r = requests.get(target_url)
         if r.status_code != 200:
-            break
+            break 
         else:
 
         # BeautifulSoupに格納
@@ -75,54 +61,51 @@ for alpha in alphas:
                     'title_url':title_url
                 }
                 # リストへ格納
-                title_dic_list.append(d)
-                # title_dic_list.append(title_url)  
-                # https://www.aozora.gr.jp/../cards/001540/files/53897_50735.html
+                title_dic_list.append(d)  
+                # ex.) https://www.aozora.gr.jp/../cards/001540/files/53897_50735.html
 
 
-# # 遷移後の画面でHTML(本文テキストがあるページ)のリンクを取得
+## 遷移後の画面でHTML(本文テキストがあるページ)のリンクを取得
 print('well!')
 print('get url')
+
 for i in range(len(title_dic_list)):
 
-    sleep(5)
+    sleep(2)
 
     target_url = title_dic_list[i]['title_url']
    
     r = requests.get(target_url)
     if r.status_code != 200:
-        break
+        print("error url",title_dic_list[i])
+        continue
+        
     else:
         soup = BeautifulSoup(r.content, 'html.parser')
         contents = soup.find_all(href=re.compile("./files/"))
+        
         if contents == []:
-            print(title_dic_list[i])
-            break
+            print('no url',title_dic_list[i])
+            continue
+            
         else:
             contents = contents[-1]
-        # contents = soup.select('div a')
-        # contents = contents.find_all(href=re.compile("./files/"))
-        
-        # for content in contents:
-            # html_url = content
+            
+        # htmlのURLを取得
         html_url = contents.get('href')
-        # print(html_url)
-        title_url = target_url[:40]+html_url
         d = {
                 'html_url': html_url
             }
-# リストへ格納
+        # リストへ格納
         html_url_list.append(d)
-
-
-# 再定義
-url = "https://www.aozora.gr.jp/"
+        
 """
 title_dic_list['title_url'][i][#..../cards/###] + html_url_list['html_url'][j][1:]
 を取得したい
 """     
 # テキストページへのURL作成
 for i in range(len(html_url_list)):
+    # 無駄な文字の削除
     html_url = html_url_list[i]['html_url'][1:]
     title_url = title_dic_list[i]['title_url'][:40]
 
@@ -132,26 +115,24 @@ for i in range(len(html_url_list)):
         'title' : title_dic_list[i]['title'],
         'text_url' : text_url
     }
-# テキストのタイトルとリンクを格納
+    # テキストのタイトルとリンクを格納
     text_url_list.append(d)
-# print(title_dic_list)
-# print(html_url_list)
-# print(text_url_list)   
-# d_list = text_url_list
+print('well')
 
 #　テキストを全件取得
-print('well')
 print('get text')
 for i in range(len(text_url_list)):
 
-    sleep(5)
+    sleep(1)
 
     target_url = text_url_list[i]['text_url']
 
     r = requests.get(target_url)
+    
     if r.status_code != 200:
         print(text_url_list[i])
-        break
+        continue
+        
     else:
         soup = BeautifulSoup(r.content, 'html.parser')
         title = soup.find('h1').text
@@ -167,16 +148,22 @@ for i in range(len(text_url_list)):
         }
 
         d_list.append(d)
-        # print(d_list)
 
 print('finish')
+
 # DataFrameに変換
 text_data = pd.DataFrame(d_list)
-text_data.to_csv("aozora_data.csv") #csv ファイルに変換
-# print(text_data.head())
-# print(text_data.values)
-print('send text to sql')
 
+print('send text to sql')
+## SQLログイン情報 
+conf = configparser.ConfigParser()
+conf.read('config.ini')
+
+path = conf['SQL']['path']
+port = conf['SQL']['port']
+dbname = conf['SQL']['dbname']
+user = conf['SQL']['user']
+password = conf['SQL']['password']
 # SQLに保存
 conText = "host={} port={} dbname={} user={} password={}"
 conText = conText.format(path,port,dbname,user,password)

@@ -123,7 +123,7 @@ print('well')
 print('get text')
 for i in range(len(text_url_list)):
 
-    sleep(1)
+    sleep(2)
 
     target_url = text_url_list[i]['text_url']
 

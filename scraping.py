@@ -16,7 +16,8 @@ title_dic_list = []
 html_url_list = []
 text_url_list = []
 d_list = [] 
-alphas = ['a','i','u','e','o',
+alphas = ['a',
+'i','u','e','o',
         'ka','ki','ku','ke','ko',
         'sa','si','su','se','so',
         'ta','ti','tu','te','to',
@@ -32,9 +33,9 @@ alphas = ['a','i','u','e','o',
 print('start')
 # アクセスのためのページ番号とアルファベット
 for alpha in alphas:
-    for page in range(1,50):
+    for page in range(10,15):
         
-        sleep(3)
+        sleep(2)
 
         target_url = url.format(alpha=alpha, page=page)
     
@@ -78,6 +79,10 @@ for i in range(len(title_dic_list)):
     r = requests.get(target_url)
     if r.status_code != 200:
         print("error url",title_dic_list[i])
+        d = {
+                'html_url': "errorURL"
+            }
+        html_url_list.append(d)
         continue
         
     else:
@@ -86,8 +91,11 @@ for i in range(len(title_dic_list)):
         
         if contents == []:
             print('no url',title_dic_list[i])
+            d = {
+                'html_url': 'noURL'
+            }
+            html_url_list.append(d)
             continue
-            
         else:
             contents = contents[-1]
             
@@ -106,8 +114,11 @@ title_dic_list['title_url'][i][#..../cards/###] + html_url_list['html_url'][j][1
 # テキストページへのURL作成
 for i in range(len(html_url_list)):
     # 無駄な文字の削除
-    html_url = html_url_list[i]['html_url'][1:]
-    title_url = title_dic_list[i]['title_url'][:40]
+    if html_url_list[i]['html_url'] == "noURL" or "errorURL":
+        continue
+    else:
+        html_url = html_url_list[i]['html_url'][1:]
+        title_url = title_dic_list[i]['title_url'][:40]
 
     text_url = title_url + html_url
 
@@ -130,8 +141,7 @@ for i in range(len(text_url_list)):
     r = requests.get(target_url)
     
     if r.status_code != 200:
-        print(text_url_list[i])
-        continue
+        print('not free', text_url_list[i])
         
     else:
         soup = BeautifulSoup(r.content, 'html.parser')
@@ -164,18 +174,18 @@ port = conf['SQL']['port']
 dbname = conf['SQL']['dbname']
 user = conf['SQL']['user']
 password = conf['SQL']['password']
-# SQLに保存
-conText = "host={} port={} dbname={} user={} password={}"
-conText = conText.format(path,port,dbname,user,password)
+# # SQLに保存
+# conText = "host={} port={} dbname={} user={} password={}"
+# conText = conText.format(path,port,dbname,user,password)
 
-connection = pg.connect(conText)
-cur = connection.cursor()
+# connection = pg.connect(conText)
+# cur = connection.cursor()
 
-sql = "insert into aozora(get_title, url, title, author, text) values(%s, %s, %s, %s, %s);"
-cur.executemany(sql, text_data.values)
-connection.commit()
+# sql = "insert into aozora(get_title, url, title, author, text) values(%s, %s, %s, %s, %s);"
+# cur.executemany(sql, text_data.values)
+# connection.commit()
 
-cur.close()
+# cur.close()
 
 ## postgreSQLテーブル
 # CREATE table text (

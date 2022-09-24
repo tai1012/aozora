@@ -10,30 +10,39 @@ import psycopg2 as pg
 
 ## 作品名先頭文字が「あ」の書籍を出力
 # urlの取得
+"""
+comment
+"""
 url = "https://www.aozora.gr.jp/index_pages/sakuhin_{alpha}{page}.html"
 # 変数title_dic_listに空のリストを作成そこにタイトルとurlを格納
 title_dic_list = []
 html_url_list = []
 text_url_list = []
 d_list = [] 
-alphas = ['a',
-'i','u','e','o',
-        'ka','ki','ku','ke','ko',
-        'sa','si','su','se','so',
-        'ta','ti','tu','te','to',
-        'na','ni','nu','ne','no',
-        'ha','hi','hu','he','ho',
-        'ma','mi','mu','me','mo',
-        'ya','yu','yo'
-        'ra','ri','ru','re','ro'
-        'wa','wo','nn','zz'
+alphas = [
+    # 'a','i','u','e','o',
+        # 'ka',
+        # 'ki','ku',
+        # 'ke',
+        'ko',
+        # 'sa','si','su','se','so',
+        # 'ta','ti','tu','te','to',
+        # 'na','ni','nu','ne','no',
+        # 'ha','hi','hu','he','ho',
+        # 'ma','mi','mu','me','mo',
+        # 'ya','yu','yo'
+        # 'ra','ri','ru','re','ro'
+        # 'wa','wo','nn','zz'
     ]
 
 
 print('start')
 # アクセスのためのページ番号とアルファベット
+"""
+comment
+"""
 for alpha in alphas:
-    for page in range(10,15):
+    for page in range(14,18):
         
         sleep(2)
 
@@ -101,11 +110,18 @@ for i in range(len(title_dic_list)):
             
         # htmlのURLを取得
         html_url = contents.get('href')
-        d = {
-                'html_url': html_url
+        if html_url[-4:] != 'html':
+            d = {
+                'html_url':'noURL'
             }
-        # リストへ格納
-        html_url_list.append(d)
+            html_url_list.append(d)
+        else:
+            d = {
+                    'html_url': html_url
+                }
+            # リストへ格納
+            html_url_list.append(d)
+            print(d)
         
 """
 title_dic_list['title_url'][i][#..../cards/###] + html_url_list['html_url'][j][1:]
@@ -114,20 +130,22 @@ title_dic_list['title_url'][i][#..../cards/###] + html_url_list['html_url'][j][1
 # テキストページへのURL作成
 for i in range(len(html_url_list)):
     # 無駄な文字の削除
-    if html_url_list[i]['html_url'] == "noURL" or "errorURL":
-        continue
-    else:
+    if html_url_list[i]['html_url'] != "noURL" or "errorURL":
         html_url = html_url_list[i]['html_url'][1:]
         title_url = title_dic_list[i]['title_url'][:40]
 
-    text_url = title_url + html_url
+        text_url = title_url + html_url
 
-    d = {
-        'title' : title_dic_list[i]['title'],
-        'text_url' : text_url
-    }
-    # テキストのタイトルとリンクを格納
-    text_url_list.append(d)
+        d = {
+            'title' : title_dic_list[i]['title'],
+            'text_url' : text_url
+        }
+        # テキストのタイトルとリンクを格納
+        text_url_list.append(d)
+
+    else:
+        continue
+    print(d)
 print('well')
 
 #　テキストを全件取得
@@ -139,25 +157,35 @@ for i in range(len(text_url_list)):
     target_url = text_url_list[i]['text_url']
 
     r = requests.get(target_url)
-    
     if r.status_code != 200:
         print('not free', text_url_list[i])
         
     else:
-        soup = BeautifulSoup(r.content, 'html.parser')
-        title = soup.find('h1').text
-        author = soup.find('h2').text
-        text = soup.find('div', class_='main_text').text
+        """
+            カ行、ワ行で、atribute error その前のコード著作権があるものを抜けきれない文があったので、例外処理で一旦不要なものでも保存→SQLで除く
+        """
+        if text_url_list[i]['text_url'][-4:] != 'html' :
+            continue
+            
+        else:
+            try:
+                soup = BeautifulSoup(r.content, 'html.parser')
+                title = soup.find('h1').text
+                author = soup.find('h2').text
+                text = soup.find('div', class_='main_text').text
+            except AttributeError:
+                print("AttributeError")
+            
+            d = {
+                'get_title' : text_url_list[i]['title'],
+                'url' : text_url_list[i]['text_url'],
+                'title' : title,
+                'author' : author,
+                'text' : text
+            }
 
-        d = {
-            'get_title' : text_url_list[i]['title'],
-            'url' : text_url_list[i]['text_url'],
-            'title' : title,
-            'author' : author,
-            'text' : text
-        }
-
-        d_list.append(d)
+            d_list.append(d)
+            print(d)
 
 print('finish')
 
@@ -174,18 +202,19 @@ port = conf['SQL']['port']
 dbname = conf['SQL']['dbname']
 user = conf['SQL']['user']
 password = conf['SQL']['password']
-# # SQLに保存
-# conText = "host={} port={} dbname={} user={} password={}"
-# conText = conText.format(path,port,dbname,user,password)
 
-# connection = pg.connect(conText)
-# cur = connection.cursor()
+# SQLに保存
+conText = "host={} port={} dbname={} user={} password={}"
+conText = conText.format(path,port,dbname,user,password)
 
-# sql = "insert into aozora(get_title, url, title, author, text) values(%s, %s, %s, %s, %s);"
-# cur.executemany(sql, text_data.values)
-# connection.commit()
+connection = pg.connect(conText)
+cur = connection.cursor()
 
-# cur.close()
+sql = "insert into text(get_title, url, title, author, text) values(%s, %s, %s, %s, %s);"
+cur.executemany(sql, text_data.values)
+connection.commit()
+
+cur.close()
 
 ## postgreSQLテーブル
 # CREATE table text (

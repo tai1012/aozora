@@ -20,14 +20,13 @@ def clean_text(text):
     replaced_text = re.sub(r'[【】]', ' ', replaced_text)       # 【】の除去
     replaced_text = re.sub(r'[（）()]', ' ', replaced_text)     # （）の除去
     replaced_text = re.sub(r'[［］\[\]]', ' ', replaced_text)   # ［］の除去
-    # replaced_text = re.sub(r'[@＠]\w+', '', replaced_text)  # メンションの除去
-    replaced_text = re.sub("[\uFF01-\uFF0F\uFF1A-\uFF20\uFF3B-\uFF40\uFF5B-\uFF65\u3000-\u303F]", ' ', replaced_text) # 全角記号の除去 !,/,:,@,[],``,{},., 
+    replaced_text = re.sub("[\uFF01-\uFF0F\uFF1A-\uFF20\uFF3B-\uFF40\uFF5B-\uFF65\u3000-\u303F]", '', replaced_text) # 全角記号の除去 !,/,:,@,[],``,{},., 
     replaced_text = re.sub(
         r'https?:\/\/.*?[\r\n ]', '', replaced_text)  # URLの除去
-    replaced_text = re.sub(r'　', ' ', replaced_text)  # 全角空白の除去
+    replaced_text = re.sub(r'　', '', replaced_text)  # 全角空白の除去
     replaced_text = re.sub(r'\r\n', '', replaced_text)  # 全角空白の除去
     replaced_text = re.sub(r'\r', '', replaced_text)  # 全角空白の除去
-    replaced_text = re.sub(r'\n', ' ', replaced_text)  # 全角空白の除去
+    replaced_text = re.sub(r'\n', '', replaced_text)  # 全角空白の除去
     return replaced_text
 
 # 正規化

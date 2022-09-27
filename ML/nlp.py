@@ -1,4 +1,4 @@
-from unittest import result
+# import文
 import pandas as pd
 import numpy as np
 
@@ -15,12 +15,13 @@ from preprocessings.preprocessing import clean_text, normalize
  *前処理
  後にfor文で１テキストずつ出力して全件整形
  dataframeで確認
+sentenceにわけて一文字のやつを消す
  「上」「下」「中？」「一」「二」とかも消した方が良さそう？
- →消したら他に影響
+ →消したら他に影響？
  数字は０に変更
 
- Mecabでいいけど
- 辞書、固有名詞が結合されて、判別しにくい可能性
+ MeCabでいいけど
+ 辞書を変えると、固有名詞が結合されて、判別しにくい可能性
 →どっちもやってみる
 https://atmarkit.itmedia.co.jp/ait/articles/2102/05/news027_2.html
 
@@ -28,6 +29,7 @@ https://atmarkit.itmedia.co.jp/ait/articles/2102/05/news027_2.html
  target(y):author
  expression(X):text, (title?)
  文脈、文の長さ、句読点などの書き方、位置で分類はできそう
+ 品詞情報でもできる
 
  *visualize
  shap とか、
@@ -42,30 +44,33 @@ author_data = row_data.author
 text_data = row_data.text
 url = row_data.url
 
-# print(author_data.head())
-# print(text_data.head())
-# print(row_data.head())
-text = np.array(text_data)
-print(text[1])
-# print(text_data.head())
-# for i in range(len(text[0:5])):
-print('***'*50)
-text = clean_text(text[1])
-text = normalize(text)
+for i in range(len(text_data[0:5])):
+    print(text_data[i])
+    print('***'*50)
+    sentences = text_data[i].split('\r\n')
+    for sentence in sentences:
+        text = clean_text(sentence)
+        sentence = normalize(text)
+        print(sentence)
+        print('---'*50)
+        # tagger = MeCab.Tagger('-d ' + unidic.DICDIR)
+        tagger = MeCab.Tagger('-Owakati')
+        result = tagger.parse(sentence)
+        print(result)
 
-tagger = MeCab.Tagger()
-result = tagger.parse(text)
-print(result)
-    # print(clean_text(text[i]))
-    # print(normalize(text[i]))
+    print(row_data.loc[i,'url'])
 
-    # print(row_data.loc[i,'url'])
+"""
+品詞情報からまずは2値分類→多値分類
+ex.)芥川フラグ：１
+    その他：０
+
+特定の品詞？だけまたはストップワードで重要な文章だけを取ってきたもので評価まで
+名詞、動詞, etc...
+https://note.com/shimakaze_soft/n/nf02b0f8ab0f6 参考
+"""
 
 
 
-
-
-
-# print(text_data[5]) #二つ目のテキストがみやすそうなので一旦実装
 
 

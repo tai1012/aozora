@@ -3,6 +3,7 @@
 import re
 import unicodedata
 
+import MeCab
 import nltk
 from nltk.corpus import wordnet
 
@@ -24,9 +25,10 @@ def clean_text(text):
     replaced_text = re.sub(
         r'https?:\/\/.*?[\r\n ]', '', replaced_text)  # URLの除去
     replaced_text = re.sub(r'　', '', replaced_text)  # 全角空白の除去
-    replaced_text = re.sub(r'\r\n', '', replaced_text)  # 全角空白の除去
-    replaced_text = re.sub(r'\r', '', replaced_text)  # 全角空白の除去
-    replaced_text = re.sub(r'\n', '', replaced_text)  # 全角空白の除去
+    # replaced_text = re.sub(r'. … -', '', replaced_text)  # .,…,-の除去
+    replaced_text = re.sub(r'\r', '', replaced_text)  # 先頭の空白の除去
+    replaced_text = re.sub(r'\n', '', replaced_text)  # 改行の除去
+    replaced_text = re.sub(r'――', '', replaced_text)  # .,…,-の除去
     return replaced_text
 
 # 正規化

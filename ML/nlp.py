@@ -44,33 +44,9 @@ author_data = row_data.author
 text_data = row_data.text
 url = row_data.url
 
-for i in range(len(text_data[0:5])):
-    print(text_data[i])
-    print('***'*50)
-    sentences = text_data[i].split('\r\n')
-    for sentence in sentences:
-        text = clean_text(sentence)
-        sentence = normalize(text)
-        print(sentence)
-        print('---'*50)
-        # tagger = MeCab.Tagger('-d ' + unidic.DICDIR)
-        tagger = MeCab.Tagger('-Owakati')
-        result = tagger.parse(sentence)
-        print(result)
+# print(row_data.unique())
+row_data['author_num'] = row_data.groupby('author').ngroup()+1
+print(row_data['author_num'])
+print(row_data.groupby(['author','author_num']).size())
 
-    print(row_data.loc[i,'url'])
-
-"""
-品詞情報からまずは2値分類→多値分類
-ex.)芥川フラグ：１
-    その他：０
-
-特定の品詞？だけまたはストップワードで重要な文章だけを取ってきたもので評価まで
-名詞、動詞, etc...
-https://note.com/shimakaze_soft/n/nf02b0f8ab0f6 参考
-"""
-
-
-
-
-
+row_data[['author','author_num']]

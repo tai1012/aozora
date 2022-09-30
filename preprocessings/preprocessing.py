@@ -59,5 +59,13 @@ def lemmatize_term(term, pos=None):
             pos = wordnet.ADJ
     return nltk.WordNetLemmatizer().lemmatize(term, pos=pos)
 
+def wakachi(text):
+
+    mecab = MeCab.Tagger("-Owakati")
+
+    return mecab.parse(text).strip().split(" ")
 
 
+def n_gram(target, n):
+  # 基準を1文字(単語)ずつ ずらしながらn文字分抜き出す
+    return [ target[idx:idx + n] for idx in range(len(target) - n + 1)]

@@ -1,9 +1,13 @@
+# nano-gramで品詞の相対頻度で著者分類(同定)
+
 # import文
 import pandas as pd
-import numpy as np
+# import numpy as np
 
 import MeCab
 import unidic
+
+
 
 import sys
 sys.path.append('..')
@@ -37,13 +41,14 @@ https://atmarkit.itmedia.co.jp/ait/articles/2102/05/news027_2.html
  →著者ごとに分類できたら、その著者を表す単語を著者ごとに分けて可視化
 """
 # データの読み込み
-row_data = pd.read_csv('../data/aozora_data.csv')
-# print(row_data.groupby('author').size())
+row_data = pd.read_csv('../data/aozora_data2.csv')
+# 著者を数値化
 row_data['author_num'] = row_data.groupby('author').ngroup()+1 
+
 
 author_data = row_data[['author_num','author']]
 text_data = row_data.text
-url = row_data.url
+# url = row_data.url
 # print(author_data)
 
 df = pd.DataFrame()
@@ -94,12 +99,14 @@ for i in range(len(text_data)):
         else:
             continue
         text_num_list.append(text_dic)
+        # print(text_dic)
+    # print(len(text_num_list))
                 # d ={
                 #     # 'author_num' : num,
                 #     key : freq,
                 #     # 'word_class_freq':freq_l,
                 # }
-    # print(text_num_list)
+    print(text_num_list)
 #                 text_num_list.append(d)
 #         text_num_to_df = text_num_list
 #     print(row_data.loc[i,'url'])
@@ -107,7 +114,7 @@ for i in range(len(text_data)):
     df_add = pd.DataFrame(text_num_list)
     df_add['author_num'] = num
     df = pd.concat([df_add, df],axis=0)
-    df =  df.fillna(0)
+    df = df.fillna(0)
     # df = df.reset_index()
 print(df)
 # # print(text_num_list)
@@ -122,7 +129,7 @@ print(df)
 # 名詞、動詞, etc...
 # https://note.com/shimakaze_soft/n/nf02b0f8ab0f6 参考
 # """
-
+df.to_csv('../data/uni_gram_df2.csv')
 
 
 

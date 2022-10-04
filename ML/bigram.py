@@ -5,6 +5,7 @@ Bigramへのデータ加工
 データとしては単語Bigramにし、品詞情報のみで相対頻度を数値として捉える
 著者は番号に一旦置き換える
 """
+# import文
 import pandas as pd
 
 import MeCab
@@ -82,13 +83,15 @@ for i in range(len(text_data)):
     # 事前に不要なものは抜けているので、単語バイグラムの相対頻度を各テキスト各文章毎を抽出
     amount = df_add.apply(lambda x: (x[0], x[1]), axis=1).value_counts(normalize=True)
     df_bi = amount.rename_axis('hinshi').reset_index(name='freq')
-    df_bi['author'] = num
-    df = pd.concat([df_bi, df],axis=0)
+    df_freq = pd.DataFrame()
+    df_freq['author'] = pd.Series(num)
+    # 品詞情報を列に持ちたいので変更
+    for key, value in amount.items():
+        df_freq[key] = pd.Series(value)
+    df = pd.concat([df_freq, df],axis=0)
+    
+# テキストごとにない品詞の組み合わせがあるので０に変更
+df = df.fillna(0)
 
-# インデックス番号の変更とテキストごとにない品詞の組み合わせがあるので０に変更
-df = df.dropna(0)
-df = df.reset_index()
-df = df.drop('index', axis=1)
-
-df.to_csv('../data/bigram_df2.csv')
+df.to_csv('../data/bigram_df3.csv')
     

@@ -13,7 +13,7 @@ import unidic
 from nltk import ngrams
 
 import sys
-sys.path.append('..')
+sys.path.append('../../')
 from preprocessings.preprocessing import clean_text, normalize, n_gram
 
 row_data = pd.read_csv('../../data/aozora_data2.csv')
@@ -25,8 +25,8 @@ df = pd.DataFrame()
 # df_add = pd.DataFrame()
 
 bigram_l = []
-for i in range(len(text_data)):
-# for i in range(4):
+# for i in range(len(text_data)):
+for i in range(10):
     l = []
     text_list = []
     num = author_data['author_num'][i]
@@ -49,7 +49,7 @@ for i in range(len(text_data)):
         # print(hinshi)
         # df_hinshi = pd.concat([df_add, df], axis=0)
         node = node.next
-        
+       
     df_add = pd.DataFrame(l)
     # print(df_hinshi)
     # ずらしたものを入れる
@@ -65,64 +65,75 @@ for i in range(len(text_data)):
     #         df['author'] = index[2]
     #         df['']
     #         print(index[0], index[1], index[2] ,value)
-    amount = df_add.apply(lambda x: (x[0], x[1]), axis=1).value_counts()
-    df_bi = amount.rename_axis('hinshi').reset_index(name='counts')
+    amount = df_add.apply(lambda x: (x[0], x[1]), axis=1).value_counts(normalize=True)
+    amount = dict(amount)
+    df_bi = pd.DataFrame()
     df_bi['author'] = num
-    df = pd.concat([df_bi, df],axis=0)
-#     df_d = dict(df_bi)
-#     bigram_l.append(df_d)
-#     print(bigram_l)
-# print(len(bigram_l))
-# df = pd.DataFrame(bigram_l)
-df = df.dropna(0)
-df = df.reset_index()
-df = df.drop('index', axis=1)
-
+    for key, value in amount.items():
+        df_bi[key] = pd.Series(value)
+        # print(value)
+        
+    df = pd.concat([df_bi, df], axis=0)
+    df = df.fillna(0)
 print(df)
-df.to_csv('../../data/bigram_df.csv')
-    # amount = amount.to_dict()
-    # df_add['count'] = df_add.apply(lambda x: (x[0], x[1]), axis=1).map(amount)
-    # print(df_add)
-    # bi_l = df_add
-    # print(amount)
-
-#         for sentence in sentences:
-#         text = clean_text(sentence)
-#         sentence = normalize(text)
-#         tagger = MeCab.Tagger('-Owakati')
-#         result = tagger.parse(sentence)
-
-#         node = tagger.parseToNode(sentence)
-#         nano_gram_count = {}
-#         while node:
-#             word = node.surface
-#             hinshi = node.feature.split(",")[0]
-#             if hinshi in nano_gram_count.keys():
-#                 freq = nano_gram_count[hinshi]
-#                 nano_gram_count[hinshi] = freq + 1
-#             else:
-#                 nano_gram_count[hinshi] = 1
-#             l.append(hinshi)
-#             # df_hinshi = pd.concat([df_add, df], axis=0)
-#             node = node.next
-    
-#     df_add = pd.DataFrame(l)
-#     # print(df_hinshi)
-#     ## ずらしたものを入れる
-#     # df_add['next_hinshi'] = df_add['hinshi'].shift(1)
-#     df_add = df_add.rename(columns={0:'hinshi'})
-#     df_add['previous'] = df_add.shift(1)
-#     df_add = (df_add[1:].query("hinshi != 'BOS/EOS' & previous != 'BOS/EOS'"))
-#     df_add['author_num'] = num
-#     amount = df_add.apply(lambda x: (x[0], x[1]), axis=1).value_counts(normalize=True)
-#     amount = amount.to_dict()
-#     df_add['count'] = df_add.apply(lambda x: (x[0], x[1]), axis=1).map(amount)
-#     bi_l = df_add
-#     print(bi_l)
-# #     bigram_l.append(bi_l)
+# df.to_csv('../../data/test_df2.csv')
+#     df_bi = amount.rename_axis('hinshi').reset_index(name='counts')
+#     df_bi['author'] = num
+#     df = pd.concat([df_bi, df],axis=0)
+# #     df_d = dict(df_bi)
+# #     bigram_l.append(df_d)
+# #     print(bigram_l)
+# # print(len(bigram_l))
 # # df = pd.DataFrame(bigram_l)
-# # print(df)
+# df = df.dropna(0)
+# df = df.reset_index()
+# df = df.drop('index', axis=1)
+
+# print(df)
+# df.to_csv('../../data/bigram_df.csv')
+#     # amount = amount.to_dict()
+#     # df_add['count'] = df_add.apply(lambda x: (x[0], x[1]), axis=1).map(amount)
 #     # print(df_add)
-#     # print(bi_d)
-# # print(df_add)
-# # print(df_add)
+#     # bi_l = df_add
+#     # print(amount)
+
+# #         for sentence in sentences:
+# #         text = clean_text(sentence)
+# #         sentence = normalize(text)
+# #         tagger = MeCab.Tagger('-Owakati')
+# #         result = tagger.parse(sentence)
+
+# #         node = tagger.parseToNode(sentence)
+# #         nano_gram_count = {}
+# #         while node:
+# #             word = node.surface
+# #             hinshi = node.feature.split(",")[0]
+# #             if hinshi in nano_gram_count.keys():
+# #                 freq = nano_gram_count[hinshi]
+# #                 nano_gram_count[hinshi] = freq + 1
+# #             else:
+# #                 nano_gram_count[hinshi] = 1
+# #             l.append(hinshi)
+# #             # df_hinshi = pd.concat([df_add, df], axis=0)
+# #             node = node.next
+    
+# #     df_add = pd.DataFrame(l)
+# #     # print(df_hinshi)
+# #     ## ずらしたものを入れる
+# #     # df_add['next_hinshi'] = df_add['hinshi'].shift(1)
+# #     df_add = df_add.rename(columns={0:'hinshi'})
+# #     df_add['previous'] = df_add.shift(1)
+# #     df_add = (df_add[1:].query("hinshi != 'BOS/EOS' & previous != 'BOS/EOS'"))
+# #     df_add['author_num'] = num
+# #     amount = df_add.apply(lambda x: (x[0], x[1]), axis=1).value_counts(normalize=True)
+# #     amount = amount.to_dict()
+# #     df_add['count'] = df_add.apply(lambda x: (x[0], x[1]), axis=1).map(amount)
+# #     bi_l = df_add
+# #     print(bi_l)
+# # #     bigram_l.append(bi_l)
+# # # df = pd.DataFrame(bigram_l)
+# # # print(df)
+# #     # print(df_add)
+# #     # print(bi_d)
+# # # print(df_add)
+# # # print(df_add)

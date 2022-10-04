@@ -37,7 +37,7 @@ https://atmarkit.itmedia.co.jp/ait/articles/2102/05/news027_2.html
  →著者ごとに分類できたら、その著者を表す単語を著者ごとに分けて可視化
 """
 # データの読み込み
-row_data = pd.read_csv('../data/aozora_data.csv')
+row_data = pd.read_csv('../data/aozora_data2.csv')
 # print(row_data.groupby('author').size())
 
 author_data = row_data.author
@@ -50,3 +50,5 @@ print(row_data['author_num'])
 print(row_data.groupby(['author','author_num']).size())
 
 row_data[['author','author_num']]
+
+print(row_data)

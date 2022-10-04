@@ -45,7 +45,6 @@ row_data = pd.read_csv('../data/aozora_data2.csv')
 # 著者を数値化
 row_data['author_num'] = row_data.groupby('author').ngroup()+1 
 
-
 author_data = row_data[['author_num','author']]
 text_data = row_data.text
 # url = row_data.url
@@ -129,7 +128,7 @@ print(df)
 # 名詞、動詞, etc...
 # https://note.com/shimakaze_soft/n/nf02b0f8ab0f6 参考
 # """
-df.to_csv('../data/uni_gram_df2.csv')
+# df.to_csv('../data/uni_gram_df2.csv')
 
 
 

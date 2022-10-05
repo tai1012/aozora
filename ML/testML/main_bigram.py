@@ -6,22 +6,29 @@ Bigram　でのデータ分析
 情報量の削減
 """
 # import文
+from cProfile import label
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import japanize_matplotlib
 import seaborn as sns 
+from mlxtend.plotting import plot_decision_regions
 
 
 from sklearn.model_selection import train_test_split
 import umap
 from sklearn.manifold import TSNE
+from sklearn.cluster import KMeans
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import svm
+from sklearn.decomposition import PCA
+
+from sklearn.metrics import accuracy_score
 
 # データの確認
-row_data = pd.read_csv('../data/bigram_df3.csv')
+row_data = pd.read_csv('../../data/bigram_df3.csv')
 row_data = row_data.drop('Unnamed: 0' , axis=1)
-name = pd.read_csv('../data/aozora_data2.csv')
+name = pd.read_csv('../../data/aozora_data2.csv')
 name['author_num'] = name.groupby('author').ngroup()+1
 
 # 目的変数
@@ -33,6 +40,8 @@ name = name.rename(columns={'author':'author_name'})
 
 data = pd.concat([name,row_data[::-1]], axis=1)
 data = data.drop('author_num', axis=1)
+
+data.to_csv('../../data/bigram.csv')
 # print(data["('動詞', '動詞')"])
 # if data.groupby('author').mean() >= 0.01:
 
@@ -50,21 +59,34 @@ data = data.drop('author_num', axis=1)
 
 # data = data.iloc[:,1:20]
 X = data.drop(['author', 'author_name'], axis=1)
+y_name = data['author_name']
 y = data['author']
-
-X = np.array(X)
-y = np.array(y)
-print(X.shape, y.shape)
+# X = np.array(X)
+# y = np.array(y)
 
 X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.3, random_state = 42)
 
+
+pca = PCA(n_components=2)
+X_train2 = pca.fit_transform(X_train)
 # print(X_train.shape, X_test.shape)
 # print(y_train.shape, y_test.shape)
 # print(X_train.head())
 
 # umap
+# mapper = umap.UMAP()
+# embedding = mapper.fit_transform(X)
+# embedding_x = embedding[:, 0]
+# embedding_y = embedding[:, 1]
 
-
+# for n in np.unique(y):
+#      plt.scatter(embedding_x[y == n],
+#                     embedding_y[y == n],
+#                     label=n
+#                )
+# plt.grid()
+# plt.legend()
+# print(plt.show())
 # # ランダムフォレスト　
 # forest = RandomForestClassifier(n_estimators=1000, max_depth=50, random_state=42)
 # forest.fit(X_train, y_train)
@@ -74,7 +96,12 @@ X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.3, random_s
 # print(forest.score(X_test, y_test))
 
 """
-結果　ランダムフォレスト：param　： n_estimators=10000, max_depth=20
+結果　
+     colab環境で、t-SNE,UMAP,KMeansによって可視化
+     　→判断できなさそう
+          →svmならもしかしたら。。。
+
+     ランダムフォレスト：param　： n_estimators=10000, max_depth=20
      スコア　0.5978344934261408 
      特徴量　左から９個目までの品詞情報
 
@@ -98,3 +125,22 @@ X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.3, random_s
 # # print(row_data[row_data['hinshi'].str.contains('名詞|助詞|動詞')])
 
 
+
+svm = svm.SVC(C = 1000, gamma = 10, kernel = 'rbf', random_state=42)
+svm.fit(X_train2, y_train)
+
+pred_train = svm.predict(X_train2)
+accuracy_train = accuracy_score(y_train, pred_train)
+print(accuracy_train)
+
+# pred_test = svm.predict(X_test)
+accuracy_test = accuracy_score(X_test,y_test)
+# print(pred_test, accuracy_test)
+
+
+X_combined = X_test.values
+y_combined = y_test.values
+
+fig = plt.figure(figsize=(13,13))
+plot_decision_regions(X_train2, y_train, clf=svm)
+print(plt.show())

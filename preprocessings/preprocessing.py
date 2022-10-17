@@ -2,10 +2,12 @@
 # import文
 import re
 import unicodedata
+import urllib
 
 import MeCab
 import nltk
 from nltk.corpus import wordnet
+
 
 """
 text = "①1１"
@@ -69,3 +71,51 @@ def wakachi(text):
 def n_gram(target, n):
   # 基準を1文字(単語)ずつ ずらしながらn文字分抜き出す
     return [ target[idx:idx + n] for idx in range(len(target) - n + 1)]
+
+# ストップワードの設定を行う関数を定義。今回はローカルのtxtファイルから設定できるようにした。
+def set_stopwords():
+    """
+    Get stopwords from input document.
+    """
+    # Defined by SlpothLib
+    slothlib_path = 'http://svn.sourceforge.jp/svnroot/slothlib/CSharp/Version1/SlothLib/NLP/Filter/StopWord/word/Japanese.txt'
+    slothlib_file = urllib.request.urlopen(slothlib_path)
+    slothlib_stopwords = [line.decode("utf-8").strip() for line in slothlib_file]
+    slothlib_stopwords = [ss for ss in slothlib_stopwords if not ss==u'']
+    
+    stopwords_list = []
+    
+    # add stop_word from text file
+    f = open('more_stopword.txt')
+    txt_file = f.readlines()
+    f.close()
+    more_stopwords = [line.strip() for line in txt_file]
+    more_stopwords = [ss for ss in more_stopwords if not ss==u'']
+    stopwords_list += more_stopwords
+
+    # Merge and drop duplication
+    stopwords_list += slothlib_stopwords
+    stopwords_list = set(stopwords_list)
+
+    return stopwords_list
+
+# 品詞抽出、分かち書き
+tagger = MeCab.Tagger("")
+tagger.parse("")
+
+def extract(text):
+    words = []
+
+    # 単語の特徴リストを生成
+    node = tagger.parseToNode(text)
+
+    while node:
+        # 品詞情報(node.feature)が名詞ならば
+        if node.feature.split(",")[0] == u"名詞":
+            # 単語(node.surface)をwordsに追加
+            words.append(node.surface)
+        node = node.next
+
+    # 半角スペース区切りで文字列を結合
+    text_result = ' '.join(words)
+    return text_result

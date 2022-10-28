@@ -111,7 +111,7 @@ def extract(text):
 
     while node:
         # 品詞情報(node.feature)が名詞ならば
-        if node.feature.split(",")[0] == u"名詞":
+        if node.feature.split(",")[0] == u"名詞" and node.feature.split(",")[2] == u"一般":
             # 単語(node.surface)をwordsに追加
             words.append(node.surface)
         node = node.next

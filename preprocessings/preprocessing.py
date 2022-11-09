@@ -6,7 +6,12 @@ import urllib
 
 import MeCab
 import nltk
-from nltk.corpus import wordnet
+from nltk.corpus import wordnet, stopwords
+
+import numpy as np
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+from PIL import Image
 
 
 """
@@ -86,13 +91,15 @@ def set_stopwords():
     stopwords_list = []
     
     # add stop_word from text file
-    f = open('more_stopword.txt')
+    f = open('../../data/Japanese.txt')
     txt_file = f.readlines()
     f.close()
     more_stopwords = [line.strip() for line in txt_file]
     more_stopwords = [ss for ss in more_stopwords if not ss==u'']
     stopwords_list += more_stopwords
-
+    nltk.download('stopwords')
+    stop_words = stopwords.words('english')
+    stopwords_list += stop_words
     # Merge and drop duplication
     stopwords_list += slothlib_stopwords
     stopwords_list = set(stopwords_list)
@@ -112,10 +119,12 @@ def extract(text):
     while node:
         # 品詞情報(node.feature)が名詞ならば
         if node.feature.split(",")[0] == u"名詞" and node.feature.split(",")[2] == u"一般":
+            # print(node.feature)
             # 単語(node.surface)をwordsに追加
             words.append(node.surface)
         node = node.next
 
     # 半角スペース区切りで文字列を結合
     text_result = ' '.join(words)
+    # print(text_result)
     return text_result

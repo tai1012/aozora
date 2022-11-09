@@ -102,3 +102,10 @@ explainer = shap.Explainer(model = svm.predict,
                            feature_names = feature_names)
 shap_values = explainer(X_test)
 
+explainer2 = shap.Explainer(model = svm.predict, 
+                            masker = X_train,
+                            feature_names = feature_names,
+                            max_evals = 501
+                            )
+shap_values2 = explainer2(X_test) 
+
